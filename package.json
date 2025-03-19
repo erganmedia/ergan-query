@@ -1,0 +1,33 @@
+{
+  "name": "ergan-query",
+  "version": "1.0.0",
+  "main": "dist/ergan-query.umd.js",
+  "module": "dist/ergan-query.es.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "vite build"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "query",
+    "cache",
+    "react",
+    "solid",
+    "data fetching"
+  ],
+  "author": "Ömer Ergan",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^19.0.12",
+    "prettier": "^3.5.3",
+    "typescript": "~5.7.3",
+    "vite": "^6.2.2",
+    "vite-plugin-dts": "^4.5.3"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "solid-js": "^1.9.5"
+  }
+}
