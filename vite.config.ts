@@ -4,7 +4,6 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
     build: {
         lib: {
-            // Define multiple entry points
             entry: {
                 index: 'src/index.ts',
                 react: 'src/react.ts',
@@ -23,10 +22,5 @@ export default defineConfig({
             },
         },
     },
-    plugins: [
-        dts({
-            // Generate declaration files for each entry if needed.
-            entryRoot: 'src',
-        }),
-    ],
+    plugins: [dts()],
 });

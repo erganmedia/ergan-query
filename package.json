@@ -1,6 +1,6 @@
 {
   "name": "ergan-query",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/ergan-query.index.umd.js",
   "module": "dist/ergan-query.index.es.js",
   "types": "dist/index.d.ts",
