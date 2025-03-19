@@ -4,15 +4,16 @@ import dts from 'vite-plugin-dts';
 export default defineConfig({
     build: {
         lib: {
-            // The entry point of your library
-            entry: 'src/index.ts',
-            // Global name for your UMD/IIFE bundle
+            // Define multiple entry points
+            entry: {
+                index: 'src/index.ts',
+                react: 'src/react.ts',
+                solid: 'src/solid.js',
+            },
             name: 'erganQuery',
-            // Output file names for different formats
-            fileName: (format) => `ergan-query.${format}.js`,
+            fileName: (format, entryName) => `ergan-query.${entryName}.${format}.js`,
         },
         rollupOptions: {
-            // Externalize dependencies that shouldn't be bundled
             external: ['react', 'solid-js'],
             output: {
                 globals: {
@@ -22,5 +23,10 @@ export default defineConfig({
             },
         },
     },
-    plugins: [dts()],
+    plugins: [
+        dts({
+            // Generate declaration files for each entry if needed.
+            entryRoot: 'src',
+        }),
+    ],
 });
