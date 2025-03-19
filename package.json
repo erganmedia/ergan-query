@@ -1,9 +1,17 @@
 {
   "name": "ergan-query",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "dist/ergan-query.index.umd.js",
   "module": "dist/ergan-query.index.es.js",
   "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erganmedia/ergan-query.git"
+  },
+  "bugs": {
+    "url": "https://github.com/erganmedia/ergan-query/issues"
+  },
+  "homepage": "https://github.com/erganmedia/ergan-query#readme",
   "exports": {
     ".": {
       "import": "./dist/ergan-query.index.es.js",
