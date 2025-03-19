@@ -1,21 +1,24 @@
 {
   "name": "ergan-query",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "main": "dist/ergan-query.index.umd.js",
   "module": "dist/ergan-query.index.es.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/ergan-query.index.es.js",
-      "require": "./dist/ergan-query.index.umd.js"
+      "require": "./dist/ergan-query.index.umd.js",
+      "types": "./dist/index.d.ts"
     },
     "./react": {
       "import": "./dist/ergan-query.react.es.js",
-      "require": "./dist/ergan-query.react.umd.js"
+      "require": "./dist/ergan-query.react.umd.js",
+      "types": "./dist/react.d.ts"
     },
     "./solid": {
       "import": "./dist/ergan-query.solid.es.js",
-      "require": "./dist/ergan-query.solid.umd.js"
+      "require": "./dist/ergan-query.solid.umd.js",
+      "types": "./dist/solid.d.ts"
     }
   },
   "files": [

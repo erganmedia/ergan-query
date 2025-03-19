@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useSyncExternalStore, useState } from 'react';
-import type { QueryFn, QueryKey } from './types.ts';
+import type { QueryFn, QueryKey } from './core/types.ts';
 import { queryClient } from './index.ts';
 
 interface QuerySnapshot<T> {
