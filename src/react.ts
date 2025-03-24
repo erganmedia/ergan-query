@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore, useState } from 'react';
+import { useCallback, useEffect, useSyncExternalStore, useState } from 'react';
 import type { QueryFn, QueryKey } from './core/types.ts';
 import { queryClient } from './index.ts';
 
@@ -34,22 +34,13 @@ export function useQuery<T>(
     const [error, setError] = useState<unknown>(null);
     const serializedKey = JSON.stringify(queryKey);
 
-    // Ref to store the last snapshot object.
-    const lastSnapshotRef = useRef<QuerySnapshot<T> | null>(null);
-
     const getSnapshot = useCallback((): QuerySnapshot<T> => {
         const cached = queryClient.getQueryData<T>(queryKey);
-        // Return the same snapshot reference if data hasn’t changed.
-        if (lastSnapshotRef.current && lastSnapshotRef.current.data === cached) {
-            return lastSnapshotRef.current;
-        }
-        const newSnapshot: QuerySnapshot<T> = {
+        return {
             data: cached,
             isLoading: cached === undefined,
         };
-        lastSnapshotRef.current = newSnapshot;
-        return newSnapshot;
-    }, [serializedKey, queryKey]);
+    }, [JSON.stringify(queryKey)]);
 
     const subscribe = useCallback(
         (onStoreChange: () => void): (() => void) => {

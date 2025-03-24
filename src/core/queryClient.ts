@@ -96,6 +96,11 @@ class QueryClient {
             this.cache.set(key, data);
             this.queryFns.set(key, queryFn);
             this.runHook('onQuerySuccess', key, data);
+
+            if (this.subscribers.has(key)) {
+                this.subscribers.get(key)!.forEach((callback) => callback());
+            }
+
             return data;
         } catch (error) {
             this.runHook('onQueryError', key, error);
