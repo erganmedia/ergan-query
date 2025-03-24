@@ -48,12 +48,11 @@ yarn add ergan-query
 
 ## Quick Start
 
-### Basic Usage
-
-Import and use the global `queryClient` to manage queries:
+This example shows how to fetch data, manually invalidate the query (without mutation), and then refetch fresh data—all
+using async/await.
 
 ```ts
-import {queryClient} from 'ergan-query';
+import { queryClient } from 'ergan-query';
 
 // Define a query function
 const fetchData = async () => {
@@ -61,15 +60,25 @@ const fetchData = async () => {
     return response.json();
 };
 
-// Use ensureQueryData to fetch and cache data
-queryClient.ensureQueryData(['data'], fetchData).then((data) => {
-    console.log('Fetched data:', data);
-});
+const runQueries = async () => {
+    try {
+        // Fetch and cache data
+        const data = await queryClient.ensureQueryData(['data'], fetchData);
+        console.log('Fetched data:', data);
 
-// To refetch or refresh data:
-queryClient.refetch(['data']).then((freshData) => {
-    console.log('Refetched data:', freshData);
-});
+        // Manually invalidate the query without a mutation
+        queryClient.invalidateQuery(['data']);
+        console.log('Query invalidated');
+
+        // Refetch the data after invalidation
+        const freshData = await queryClient.refetch(['data']);
+        console.log('Refetched data:', freshData);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+};
+
+runQueries();
 ```
 
 ### React Example
@@ -78,7 +87,7 @@ Use the provided custom hooks in your React components:
 
 ```tsx
 import React from 'react';
-import {useQuery, useMutation} from 'ergan-query/react';
+import { useQuery, useMutation } from 'ergan-query/react';
 
 // Example query function
 const fetchData = async () => {
@@ -87,7 +96,7 @@ const fetchData = async () => {
 };
 
 export function DataComponent() {
-    const {data, error, isLoading, refetch} = useQuery(['data'], fetchData);
+    const { data, error, isLoading, refetch } = useQuery(['data'], fetchData);
 
     if (isLoading) return <div>Loading...</div>;
     if (error) return <div>Error: {String(error)}</div>;
@@ -106,19 +115,19 @@ const updateData = async (newData: any) => {
     const res = await fetch('https://api.example.com/data', {
         method: 'POST',
         body: JSON.stringify(newData),
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
     });
     return res.json();
 };
 
 export function UpdateComponent() {
-    const {mutate, isLoading, error} = useMutation(updateData, {
+    const { mutate, isLoading, error } = useMutation(updateData, {
         invalidateKeys: [['data']],
     });
 
     const handleUpdate = async () => {
         try {
-            const result = await mutate({key: 'value'});
+            const result = await mutate({ key: 'value' });
             console.log('Update successful:', result);
         } catch (err) {
             console.error('Update failed:', err);
@@ -141,8 +150,8 @@ export function UpdateComponent() {
 Use the SolidJS hooks for data management:
 
 ```tsx
-import {createSignal} from 'solid-js';
-import {useQuery, useMutation} from 'ergan-query/solid';
+import { createSignal } from 'solid-js';
+import { useQuery, useMutation } from 'ergan-query/solid';
 
 const fetchData = async () => {
     const res = await fetch('https://api.example.com/data');
@@ -150,7 +159,7 @@ const fetchData = async () => {
 };
 
 export function DataComponent() {
-    const {data, error, isLoading, refetch} = useQuery(['data'], fetchData);
+    const { data, error, isLoading, refetch } = useQuery(['data'], fetchData);
 
     return (
         <div>
@@ -167,19 +176,19 @@ const updateData = async (newData) => {
     const res = await fetch('https://api.example.com/data', {
         method: 'POST',
         body: JSON.stringify(newData),
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
     });
     return res.json();
 };
 
 export function UpdateComponent() {
-    const {mutate, isLoading, error} = useMutation(updateData, {
+    const { mutate, isLoading, error } = useMutation(updateData, {
         invalidateKeys: [['data']],
     });
 
     const handleUpdate = async () => {
         try {
-            const result = await mutate({key: 'value'});
+            const result = await mutate({ key: 'value' });
             console.log('Updated successfully', result);
         } catch (err) {
             console.error('Update failed', err);
@@ -271,8 +280,8 @@ export interface User {
 Now, use these types with your query functions:
 
 ```ts
-import {queryClient} from 'ergan-query';
-import type {User} from './types';
+import { queryClient } from 'ergan-query';
+import type { User } from './types';
 
 const fetchUser = async (): Promise<User> => {
     const response = await fetch('https://api.example.com/user');
@@ -300,8 +309,8 @@ When using React, you can specify types for your query data and mutation respons
 
 ```tsx
 import React from 'react';
-import {useQuery, useMutation} from 'ergan-query/react';
-import type {User} from './types';
+import { useQuery, useMutation } from 'ergan-query/react';
+import type { User } from './types';
 
 const fetchUser = async (): Promise<User> => {
     const res = await fetch('https://api.example.com/user');
@@ -310,7 +319,7 @@ const fetchUser = async (): Promise<User> => {
 };
 
 export function UserComponent() {
-    const {data, error, isLoading, refetch} = useQuery<User>(['user'], fetchUser);
+    const { data, error, isLoading, refetch } = useQuery<User>(['user'], fetchUser);
 
     if (isLoading) return <div>Loading user...</div>;
     if (error) return <div>Error: {String(error)}</div>;
@@ -327,7 +336,7 @@ export function UserComponent() {
 const updateUser = async (newData: Partial<User>): Promise<User> => {
     const res = await fetch('https://api.example.com/user', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newData),
     });
     if (!res.ok) throw new Error('Failed to update user');
@@ -335,13 +344,13 @@ const updateUser = async (newData: Partial<User>): Promise<User> => {
 };
 
 export function UpdateUserComponent() {
-    const {mutate, isLoading, error} = useMutation<User, [Partial<User>]>(updateUser, {
+    const { mutate, isLoading, error } = useMutation<User, [Partial<User>]>(updateUser, {
         invalidateKeys: [['user']],
     });
 
     const handleUpdate = async () => {
         try {
-            const updatedUser = await mutate({name: 'New Name'});
+            const updatedUser = await mutate({ name: 'New Name' });
             console.log('User updated:', updatedUser);
         } catch (err) {
             console.error(err);
@@ -364,9 +373,9 @@ export function UpdateUserComponent() {
 Similarly, SolidJS examples benefit from TypeScript’s strong type checking:
 
 ```tsx
-import {createSignal} from 'solid-js';
-import {useQuery, useMutation} from 'ergan-query/solid';
-import type {User} from './types';
+import { createSignal } from 'solid-js';
+import { useQuery, useMutation } from 'ergan-query/solid';
+import type { User } from './types';
 
 const fetchUser = async (): Promise<User> => {
     const res = await fetch('https://api.example.com/user');
@@ -375,7 +384,7 @@ const fetchUser = async (): Promise<User> => {
 };
 
 export function UserComponent() {
-    const {data, error, isLoading, refetch} = useQuery<User>(['user'], fetchUser);
+    const { data, error, isLoading, refetch } = useQuery<User>(['user'], fetchUser);
 
     return (
         <div>
@@ -391,7 +400,7 @@ export function UserComponent() {
 const updateUser = async (newData: Partial<User>): Promise<User> => {
     const res = await fetch('https://api.example.com/user', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newData),
     });
     if (!res.ok) throw new Error('Failed to update user');
@@ -399,13 +408,13 @@ const updateUser = async (newData: Partial<User>): Promise<User> => {
 };
 
 export function UpdateUserComponent() {
-    const {mutate, isLoading, error} = useMutation<User, [Partial<User>]>(updateUser, {
+    const { mutate, isLoading, error } = useMutation<User, [Partial<User>]>(updateUser, {
         invalidateKeys: [['user']],
     });
 
     const handleUpdate = async () => {
         try {
-            const updatedUser = await mutate({name: 'Updated Name'});
+            const updatedUser = await mutate({ name: 'Updated Name' });
             console.log('User updated:', updatedUser);
         } catch (err) {
             console.error(err);

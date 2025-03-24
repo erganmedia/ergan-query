@@ -39,7 +39,7 @@ export function useQuery<T>(
 
     const getSnapshot = useCallback((): QuerySnapshot<T> => {
         const cached = queryClient.getQueryData<T>(queryKey);
-        // If the cached value hasn't changed, return the same snapshot reference.
+        // Return the same snapshot reference if data hasn’t changed.
         if (lastSnapshotRef.current && lastSnapshotRef.current.data === cached) {
             return lastSnapshotRef.current;
         }
@@ -63,15 +63,13 @@ export function useQuery<T>(
     const data = snapshot.data;
     const isLoading = snapshot.isLoading && error === null;
 
-    const fetchData = useCallback((): void => {
-        queryClient
-            .ensureQueryData<T>(queryKey, queryFn)
-            .then(() => {
-                setError(null);
-            })
-            .catch((err) => {
-                setError(err);
-            });
+    const fetchData = useCallback(async (): Promise<void> => {
+        try {
+            await queryClient.ensureQueryData<T>(queryKey, queryFn);
+            setError(null);
+        } catch (err) {
+            setError(err);
+        }
     }, [serializedKey, queryKey, queryFn]);
 
     useEffect(() => {

@@ -5,22 +5,61 @@
  *
  * A lightweight query management and mutation library that provides caching,
  * invalidation, and data fetching functionalities across JavaScript applications.
- * it offers a comprehensive solution for handling asynchronous data. Additionally,
+ * It offers a comprehensive solution for handling asynchronous data. Additionally,
  * it provides a set of custom hooks for React, making integration with UI components seamless.
  */
 import { QueryFn, QueryKey } from './types.ts';
+
+/** Plugin lifecycle hooks */
+type PluginHooks = {
+    onQueryStart?: (key: string) => void;
+    onQuerySuccess?: (key: string, data: any) => void;
+    onQueryError?: (key: string, error: any) => void;
+    onInvalidate?: (key: string) => void;
+};
+
+export type Plugin = (client: QueryClient) => PluginHooks | void;
 
 class QueryClient {
     /** @private */
     private cache = new Map<string, any>();
 
     /** @private */
-    // Map to hold subscribers for each query key.
     private subscribers = new Map<string, Set<() => void>>();
 
     /** @private */
-    // Map to hold query functions for each query key.
     private queryFns = new Map<string, QueryFn<any>>();
+
+    /** @private */
+    private pluginHooks: PluginHooks[] = [];
+
+    /**
+     * Registers a plugin that can hook into query lifecycle events.
+     *
+     * @param {Plugin} plugin - A plugin function that optionally returns hook implementations.
+     */
+    use(plugin: Plugin): void {
+        const hooks = plugin(this);
+        if (hooks) {
+            this.pluginHooks.push(hooks);
+        }
+    }
+
+    /**
+     * Internal: Triggers a specific plugin hook if available.
+     *
+     * @template K
+     * @param {K} hook - The lifecycle event key.
+     * @param {...any[]} args - Arguments passed to the hook function.
+     */
+    private runHook<K extends keyof PluginHooks>(hook: K, ...args: Parameters<NonNullable<PluginHooks[K]>>): void {
+        for (const plugin of this.pluginHooks) {
+            const fn = plugin[hook];
+            if (fn) { // @ts-ignore
+                fn(...args);
+            }
+        }
+    }
 
     /**
      * Returns the cached value for the provided query key.
@@ -45,14 +84,23 @@ class QueryClient {
      */
     async ensureQueryData<T>(queryKey: QueryKey, queryFn: QueryFn<T>): Promise<T> {
         const key = queryKey ? JSON.stringify(queryKey) : 'undefined';
+
         if (this.cache.has(key)) {
             return this.cache.get(key);
         }
-        const data = await queryFn();
-        this.cache.set(key, data);
-        // Store the query function for future refetches.
-        this.queryFns.set(key, queryFn);
-        return data;
+
+        this.runHook('onQueryStart', key);
+
+        try {
+            const data = await queryFn();
+            this.cache.set(key, data);
+            this.queryFns.set(key, queryFn);
+            this.runHook('onQuerySuccess', key, data);
+            return data;
+        } catch (error) {
+            this.runHook('onQueryError', key, error);
+            throw error;
+        }
     }
 
     /**
@@ -66,11 +114,19 @@ class QueryClient {
      */
     async fetchQuery<T>(queryKey: QueryKey, queryFn: QueryFn<T>): Promise<T> {
         const key = queryKey ? JSON.stringify(queryKey) : 'undefined';
-        const data = await queryFn();
-        this.cache.set(key, data);
-        // Store the query function for future refetches.
-        this.queryFns.set(key, queryFn);
-        return data;
+
+        this.runHook('onQueryStart', key);
+
+        try {
+            const data = await queryFn();
+            this.cache.set(key, data);
+            this.queryFns.set(key, queryFn);
+            this.runHook('onQuerySuccess', key, data);
+            return data;
+        } catch (error) {
+            this.runHook('onQueryError', key, error);
+            throw error;
+        }
     }
 
     /**
@@ -88,7 +144,6 @@ class QueryClient {
             throw new Error(`No query function found for key: ${key}`);
         }
         const data = await this.fetchQuery(queryKey, queryFn);
-        // Notify subscribers that the query data has been updated.
         if (this.subscribers.has(key)) {
             this.subscribers.get(key)!.forEach((callback) => callback());
         }
@@ -105,6 +160,8 @@ class QueryClient {
     invalidateQuery(queryKey: QueryKey, shouldRefetchOnInvalidate: boolean = true): void {
         const key = queryKey ? JSON.stringify(queryKey) : 'undefined';
         this.cache.delete(key);
+        this.runHook('onInvalidate', key);
+
         if (shouldRefetchOnInvalidate && this.subscribers.has(key)) {
             this.subscribers.get(key)!.forEach((callback) => callback());
         }
