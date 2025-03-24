@@ -157,7 +157,7 @@ class QueryClient {
      * @param {QueryKey} queryKey - The key identifying the cached query data to be invalidated.
      * @param {boolean} [shouldRefetchOnInvalidate=true] - If true, any subscribers registered for this query key will be notified that the data was invalidated.
      */
-    invalidateQuery(queryKey: QueryKey, shouldRefetchOnInvalidate: boolean = true): void {
+    invalidateQuery(queryKey: QueryKey, shouldRefetchOnInvalidate: boolean): void {
         const key = queryKey ? JSON.stringify(queryKey) : 'undefined';
         this.cache.delete(key);
         this.runHook('onInvalidate', key);
